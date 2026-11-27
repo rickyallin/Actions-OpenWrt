@@ -3,6 +3,15 @@ name: OpenWrt Builder
 on:
   repository_dispatch:
   workflow_dispatch:
+    inputs:
+      config_file:
+        description: '选择要编译的路由器配置文件'
+        required: true
+        default: '.config'
+        type: choice
+        options:
+          - .config
+          - configs/k2p.config
 
 env:
   REPO_URL: https://github.com/coolsnowwolf/lede
@@ -66,7 +75,9 @@ jobs:
       - name: Load custom configuration
         run: |
           [ -e files ] && mv files openwrt/files
-          [ -e $CONFIG_FILE ] && mv $CONFIG_FILE openwrt/.config
+          SELECTED_CONFIG="${{ github.event.inputs.config_file }}"
+          TARGET_CONFIG="${SELECTED_CONFIG:-$CONFIG_FILE}"
+          [ -e "$TARGET_CONFIG" ] && cp "$TARGET_CONFIG" openwrt/.config
           chmod +x $DIY_P2_SH
           cd openwrt
           $GITHUB_WORKSPACE/$DIY_P2_SH
@@ -113,6 +124,6 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
-          tag_name: R3GV2-${{ github.run_number }}
-          name: OpenWrt R3GV2 Build #${{ github.run_number }}
+          tag_name: Build${{ env.DEVICE_NAME }}-${{ github.run_number }}
+          name: OpenWrt${{ env.DEVICE_NAME }} Build #${{ github.run_number }}
           files: ${{ env.FIRMWARE }}/*
