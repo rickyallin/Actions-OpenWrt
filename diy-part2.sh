@@ -20,13 +20,13 @@
 #sed -i 's/OpenWrt/P3TERX-Router/g' package/base-files/files/bin/config_generate
 sed -i 's/192.168.1.1/192.168.8.1/g' package/base-files/files/bin/config_generate
 
-# 植入 1KB Xray 动态拉取脚本（从专属仓库下载 UPX 压缩版核心至内存 /tmp）
+# 植入 1KB Xray 动态拉取脚本（从 fastly 加速节点下载 UPX 压缩版核心至内存 /tmp）
 mkdir -p files/usr/bin
 cat << 'EOF' > files/usr/bin/xray
 #!/bin/sh
 if [ ! -f /tmp/xray ]; then
-    while ! (curl -sfL -o /tmp/xray https://cdn.jsdelivr.net/gh/rickyallin/Backup@main/mt7620_mt7621_upx/xray); do
-        sleep 1
+    while ! (curl -sfLk --connect-timeout 10 -m 60 -o /tmp/xray https://fastly.jsdelivr.net/gh/rickyallin/Backup@main/mt7620_mt7621_upx/xray); do
+        sleep 2
     done
     chmod +x /tmp/xray
 fi
