@@ -4,21 +4,16 @@
 # File name: diy-part2.sh
 # Description: OpenWrt DIY script part 2 (After Update feeds)
 #
-# Copyright (c) 2019-2024 P3TERX <https://p3terx.com>
-#
-# This is free software, licensed under the MIT License.
-# See /LICENSE for more information.
-#
 
-# Modify default IP
-#sed -i 's/192.168.1.1/192.168.50.5/g' package/base-files/files/bin/config_generate
-
-# Modify default theme
-#sed -i 's/luci-theme-bootstrap/luci-theme-argon/g' feeds/luci/collections/luci/Makefile
-
-# Modify hostname
-#sed -i 's/OpenWrt/P3TERX-Router/g' package/base-files/files/bin/config_generate
+# 修改默认后台 IP 为 192.168.8.1
 sed -i 's/192.168.1.1/192.168.8.1/g' package/base-files/files/bin/config_generate
+
+# 强制关闭 SSR Plus+ Makefile 中默认开启的冗余组件（防止 make defconfig 自动回弹）
+SSR_MK="feeds/helloworld/luci-app-ssr-plus/Makefile"
+if [ -f "$SSR_MK" ]; then
+    sed -i 's/default y if !TARGET_ramips/default n/g' "$SSR_MK"
+    sed -i 's/default y/default n/g' "$SSR_MK"
+fi
 
 # 植入 1KB Xray 动态拉取脚本（从 fastly 加速节点下载 UPX 压缩版核心至内存 /tmp）
 mkdir -p files/usr/bin
