@@ -19,3 +19,20 @@
 # Modify hostname
 #sed -i 's/OpenWrt/P3TERX-Router/g' package/base-files/files/bin/config_generate
 sed -i 's/192.168.1.1/192.168.8.1/g' package/base-files/files/bin/config_generate
+
+# 植入 1KB Xray 动态拉取脚本（从专属仓库下载 UPX 压缩版核心至内存 /tmp）
+mkdir -p files/usr/bin
+cat << 'EOF' > files/usr/bin/xray
+#!/bin/sh
+if [ ! -f /tmp/xray ]; then
+    while ! (curl -sfL -o /tmp/xray https://cdn.jsdelivr.net/gh/rickyallin/Backup@main/mt7620_mt7621_upx/xray); do
+        sleep 1
+    done
+    chmod +x /tmp/xray
+fi
+exec /tmp/xray $@
+EOF
+chmod +x files/usr/bin/xray
+
+# 将 45MB 内存上限直接写入 SSR Plus+ 启动脚本，防止 128MB 内存溢出
+sed -i '2i export GOMEMLIMIT=45MiB' feeds/helloworld/luci-app-ssr-plus/root/etc/init.d/shadowsocksr
