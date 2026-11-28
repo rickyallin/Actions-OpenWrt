@@ -12,6 +12,7 @@ on:
         options:
           - .config
           - configs/k2p.config
+          - configs/mi4a.config
 
 env:
   REPO_URL: https://github.com/coolsnowwolf/lede
